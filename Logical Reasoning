@@ -1,0 +1,101 @@
+# Rule-Based Expert System using Backward Chaining
+# Student Academic Guidance
+
+# -----------------------------
+# Facts about the student
+# -----------------------------
+facts = {
+    "GoodAttendance",
+    "HighInternalMarks",
+    "CompletedAssignments",
+    "StrongProgrammingSkills",
+    "LowMockTestScore"
+}
+
+# -----------------------------
+# Rules
+# Each rule is:
+# conclusion <- conditions
+# -----------------------------
+rules = [
+    ("GoodAcademicPerformance", ["GoodAttendance", "HighInternalMarks"]),
+    ("GoodAcademicPerformance", ["CompletedAssignments", "StrongProgrammingSkills"]),
+    ("EligibleForPlacement", ["GoodAcademicPerformance", "StrongProgrammingSkills"]),
+    ("NeedsExtraPractice", ["LowMockTestScore"]),
+    ("EligibleForPlacement", ["GoodAttendance", "CompletedAssignments",
+                              "StrongProgrammingSkills"])
+]
+
+# -----------------------------
+# Backward Chaining Function
+# -----------------------------
+def backward_chain(goal, facts, rules, visited=None, level=0):
+    if visited is None:
+        visited = set()
+
+    indent = "  " * level
+
+    # If goal is already a fact
+    if goal in facts:
+        print(f"{indent}Fact found: {goal}")
+        return True
+
+    # Avoid infinite loops
+    if goal in visited:
+        return False
+
+    visited.add(goal)
+
+    print(f"{indent}Trying to prove: {goal}")
+
+    # Find rules whose conclusion is the goal
+    for conclusion, conditions in rules:
+        if conclusion == goal:
+            print(f"{indent}Checking rule: {conclusion} <- {conditions}")
+
+            all_conditions_true = True
+
+            # Try to prove every condition
+            for condition in conditions:
+                if not backward_chain(
+                    condition, facts, rules, visited.copy(), level + 1
+                ):
+                    all_conditions_true = False
+                    break
+
+            if all_conditions_true:
+                print(f"{indent}Rule satisfied. Therefore {goal} is TRUE.")
+                return True
+
+    print(f"{indent}Cannot prove: {goal}")
+    return False
+
+
+# -----------------------------
+# Main Program
+# -----------------------------
+print("======================================")
+print(" Student Academic Guidance System")
+print("======================================")
+
+print("\nStudent Facts:")
+for fact in facts:
+    print("-", fact)
+
+print("\nAvailable Goals:")
+print("1. EligibleForPlacement")
+print("2. NeedsExtraPractice")
+print("3. GoodAcademicPerformance")
+
+goal = input("\nEnter your goal: ").strip()
+
+print("\n========== Reasoning Steps ==========")
+
+result = backward_chain(goal, facts, rules)
+
+print("\n========== Final Conclusion ==========")
+
+if result:
+    print(f"Goal '{goal}' has been PROVED.")
+else:
+    print(f"Goal '{goal}' could NOT be proved.")
